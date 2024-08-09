@@ -106,13 +106,97 @@ document.addEventListener('DOMContentLoaded', () => {
                             <p><strong>Ingredients:</strong> ${recipe.ingredients}</p>
                             <p><strong>Instructions:</strong> ${recipe.instructions}</p>
                             ${recipe.imageUrl ? `<img src="${recipe.imageUrl}" alt="${recipe.title}">` : ''}
+                            <button class="favorite-button" data-id="${recipe.id}">Save to Favorites</button>
+                            <button class="add-to-collection-button" data-recipe-id="${recipe.id}">Add to Collection</button>
                         </div>
                     `).join('')}
                 </div>
             `;
+    
+            document.querySelectorAll('.favorite-button').forEach(button => {
+                button.addEventListener('click', () => {
+                    const recipeId = button.getAttribute('data-id');
+                    saveToFavorites(recipeId);
+                });
+            });
+    
+            document.querySelectorAll('.add-to-collection-button').forEach(button => {
+                button.addEventListener('click', () => {
+                    const recipeId = button.getAttribute('data-recipe-id');
+                    showCollectionSelector(recipeId);
+                });
+            });
         })
         .catch(error => {
             console.error('There was an error loading the recipes!', error);
+        });
+    }
+
+    function showCollectionSelector(recipeId) {
+        const token = localStorage.getItem('token');
+        axios.get('http://localhost:3000/user/collections', { headers: { 'authorization': token } })
+        .then(response => {
+            const collections = response.data;
+    
+            const collectionOptions = collections.map(collection => `
+                <option value="${collection.id}">${collection.name}</option>
+            `).join('');
+    
+            const collectionSelect = `
+                <div id="collection-select">
+                    <label for="select-collection">Select Collection:</label>
+                    <select id="select-collection">
+                        ${collectionOptions}
+                    </select>
+                    <button id="add-recipe-to-collection">Add to Collection</button>
+                </div>
+            `;
+    
+            mainContent.innerHTML += collectionSelect;
+    
+            document.getElementById('add-recipe-to-collection').addEventListener('click', () => {
+                const selectedCollectionId = document.getElementById('select-collection').value;
+                addToCollection(selectedCollectionId, recipeId);
+            });
+        })
+        .catch(error => {
+            console.error('There was an error loading the collections for selection!', error);
+        });
+    }
+    
+    function addToCollection(collectionId, recipeId) {
+        const token = localStorage.getItem('token');
+        axios.post(`http://localhost:3000/user/collections/${collectionId}/recipes`, { recipeId }, { headers: { 'authorization': token } })
+        .then(() => {
+            alert('Recipe added to collection successfully');
+            loadAllRecipes();
+        })
+        .catch(error => {
+            console.error('There was an error adding the recipe to the collection!', error);
+        });
+    }    
+    
+    function removeFromCollection(collectionId, recipeId) {
+        const token = localStorage.getItem('token');
+        axios.delete(`http://localhost:3000/user/collections/${collectionId}/recipes/${recipeId}`, { headers: { 'authorization': token } })
+        .then(() => {
+            alert('Recipe removed from collection');
+            viewCollection(collectionId);
+        })
+        .catch(error => {
+            console.error('There was an error removing the recipe from the collection!', error);
+        });
+    }
+
+    function saveToFavorites(recipeId) {
+        const token = localStorage.getItem('token');
+        axios.post(`http://localhost:3000/user/favorites`, { recipeId }, { headers: { 'authorization': token } })
+        .then(() => {
+            alert('Recipe saved to favorites!');
+            loadFavoriteRecipes();
+        })
+        .catch(error => {
+            console.error('There was an error saving to favorites!', error);
         });
     }
 
@@ -162,10 +246,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div id="contributed-recipes"></div>
                 <h3>Favorite Recipes</h3>
                 <div id="favorite-recipes"></div>
+                <button id="create-collection">Create New Collection</button>
+                <div id="collections"></div>
             </div>
         `;
         loadUserProfile();
         document.getElementById('profile-form').addEventListener('submit', handleProfileUpdate);
+        document.getElementById('create-collection').addEventListener('click', createCollection);
     }
 
     function loadUserProfile() {
@@ -177,6 +264,7 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('email').value = profile.email;
             loadContributedRecipes();
             loadFavoriteRecipes();
+            loadCollections();
         })
         .catch(error => {
             console.error('There was an error loading the profile!', error);
@@ -188,26 +276,24 @@ document.addEventListener('DOMContentLoaded', () => {
         axios.get('http://localhost:3000/user/profile/contributed', { headers: { 'authorization': token } })
         .then(response => {
             const data = response.data;
-            const contributedList = document.getElementById('contributed-recipes');
-            contributedList.innerHTML = data.map(recipe => `
+            const contributedRecipes = document.getElementById('contributed-recipes');
+            contributedRecipes.innerHTML = data.map(recipe => `
                 <div class="recipe-item">
                     <h3>${recipe.title}</h3>
                     <p><strong>Ingredients:</strong> ${recipe.ingredients}</p>
                     <p><strong>Instructions:</strong> ${recipe.instructions}</p>
                     ${recipe.imageUrl ? `<img src="${recipe.imageUrl}" alt="${recipe.title}">` : ''}
-                    <button class="edit-button" data-id="${recipe.id}">Edit Recipe</button>
-                    <button class="delete-button" data-id="${recipe.id}">Delete Recipe</button>
+                    <button class="edit-recipe-button" data-id="${recipe.id}">Edit</button>
+                    <button class="delete-recipe-button" data-id="${recipe.id}">Delete</button>
                 </div>
             `).join('');
-
-            document.querySelectorAll('.edit-button').forEach(button => {
+            document.querySelectorAll('.edit-recipe-button').forEach(button => {
                 button.addEventListener('click', () => {
                     const recipeId = button.getAttribute('data-id');
                     editRecipe(recipeId);
                 });
             });
-
-            document.querySelectorAll('.delete-button').forEach(button => {
+            document.querySelectorAll('.delete-recipe-button').forEach(button => {
                 button.addEventListener('click', () => {
                     const recipeId = button.getAttribute('data-id');
                     deleteRecipe(recipeId);
@@ -215,103 +301,66 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         })
         .catch(error => {
-            console.error('There was an error loading contributed recipes!', error);
+            console.error('There was an error loading the contributed recipes!', error);
         });
-    }
-
-    function editRecipe(recipeId) {
-        axios.get(`http://localhost:3000/recipe/${recipeId}`)
-            .then(response => {
-                const recipe = response.data;
-                loadRecipeForm();
-                document.getElementById('title').value = recipe.title;
-                document.getElementById('ingredients').value = recipe.ingredients;
-                document.getElementById('instructions').value = recipe.instructions;
-                document.getElementById('imageUrl').value = recipe.imageUrl;
-                document.getElementById('difficulty').value = recipe.difficulty;
-                document.getElementById('dietary').value = recipe.dietary;
-                document.getElementById('preparationTime').value = recipe.preparationTime;
-
-                const form = document.getElementById('recipe-form');
-                form.removeEventListener('submit', handleRecipeSubmit);
-                form.addEventListener('submit', event => handleRecipeUpdate(event, recipeId));
-            })
-            .catch(error => {
-                if (error.response && error.response.status === 404) {
-                    alert('Recipe not found');
-                } else {
-                    console.error('There was an error fetching the recipe!', error);
-                }
-            });
-    }
-
-    function handleRecipeUpdate(event, recipeId) {
-        event.preventDefault();
-        const title = document.getElementById('title').value;
-        const ingredients = document.getElementById('ingredients').value;
-        const instructions = document.getElementById('instructions').value;
-        const imageUrl = document.getElementById('imageUrl').value;
-        const difficulty = document.getElementById('difficulty').value;
-        const dietary = document.getElementById('dietary').value;
-        const preparationTime = document.getElementById('preparationTime').value;
-        const token = localStorage.getItem('token');
-
-        axios.put(`http://localhost:3000/recipe/${recipeId}`, {
-            title,
-            ingredients,
-            instructions,
-            imageUrl,
-            difficulty,
-            dietary,
-            preparationTime
-        }, { headers: { 'authorization': token } })
-        .then(() => {
-            alert('Recipe updated successfully');
-            loadAllRecipes();
-        })
-        .catch(error => {
-            console.error('There was an error updating the recipe!', error);
-        });
-    }
-
-    function deleteRecipe(recipeId) {
-        const token = localStorage.getItem('token');
-        axios.delete(`http://localhost:3000/recipe/${recipeId}`, { headers: { 'authorization': token } })
-            .then(() => {
-                alert('Recipe deleted successfully');
-                loadAllRecipes();
-            })
-            .catch(error => {
-                console.error('There was an error deleting the recipe!', error);
-            });
     }
 
     function loadFavoriteRecipes() {
         const token = localStorage.getItem('token');
-        axios.get('http://localhost:3000/user/profile/favorites', { headers: { 'authorization': token } })
+        axios.get('http://localhost:3000/user/favorites', { headers: { 'authorization': token } })
         .then(response => {
             const data = response.data;
-            const favoriteList = document.getElementById('favorite-recipes');
-            favoriteList.innerHTML = data.map(recipe => `
-                <div class="recipe-item">
-                    <h3>${recipe.title}</h3>
-                    <p><strong>Ingredients:</strong> ${recipe.ingredients}</p>
-                    <p><strong>Instructions:</strong> ${recipe.instructions}</p>
-                    ${recipe.imageUrl ? `<img src="${recipe.imageUrl}" alt="${recipe.title}">` : ''}
-                </div>
-            `).join('');
+            const favoriteRecipes = document.getElementById('favorite-recipes');
+            if (favoriteRecipes) {
+                favoriteRecipes.innerHTML = data.map(recipe => {
+    
+                    const title = recipe.title || 'Untitled Recipe';
+                    const ingredients = recipe.ingredients || 'No ingredients provided';
+                    const instructions = recipe.instructions || 'No instructions provided';
+                    const imageUrl = recipe.imageUrl;
+    
+                    return `
+                        <div class="recipe-item">
+                            <h3>${title}</h3>
+                            <p><strong>Ingredients:</strong> ${ingredients}</p>
+                            <p><strong>Instructions:</strong> ${instructions}</p>
+                            ${imageUrl ? `<img src="${imageUrl}" alt="${title}">` : ''}
+                            <button class="remove-favorite-button" data-id="${recipe.id}">Remove from Favorites</button>
+                        </div>
+                    `;
+                }).join('');
+    
+                document.querySelectorAll('.remove-favorite-button').forEach(button => {
+                    button.addEventListener('click', () => {
+                        const recipeId = button.getAttribute('data-id');
+                        removeFromFavorites(recipeId);
+                    });
+                });
+            }
         })
         .catch(error => {
-            console.error('There was an error loading favorite recipes!', error);
+            console.error('There was an error loading the favorite recipes!', error);
+        });
+    }               
+
+    function removeFromFavorites(recipeId) {
+        const token = localStorage.getItem('token');
+        axios.delete(`http://localhost:3000/user/favorites/${recipeId}`, { headers: { 'authorization': token } })
+        .then(() => {
+            alert('Recipe removed from favorites');
+            loadFavoriteRecipes();
+        })
+        .catch(error => {
+            console.error('There was an error removing the recipe from favorites!', error);
         });
     }
 
     function handleProfileUpdate(event) {
         event.preventDefault();
-        const token = localStorage.getItem('token');
         const name = document.getElementById('name').value;
         const email = document.getElementById('email').value;
         const password = document.getElementById('password').value;
+        const token = localStorage.getItem('token');
 
         axios.put('http://localhost:3000/user/profile', {
             name,
@@ -320,11 +369,88 @@ document.addEventListener('DOMContentLoaded', () => {
         }, { headers: { 'authorization': token } })
         .then(() => {
             alert('Profile updated successfully');
+            loadUserProfile();
         })
         .catch(error => {
             console.error('There was an error updating the profile!', error);
         });
     }
+
+    function createCollection() {
+        const collectionName = prompt('Enter the name of the new collection:');
+        if (!collectionName) return;
+
+        const token = localStorage.getItem('token');
+        axios.post('http://localhost:3000/user/collections', { name: collectionName }, { headers: { 'authorization': token } })
+        .then(() => {
+            alert('Collection created successfully');
+            loadCollections();
+        })
+        .catch(error => {
+            console.error('There was an error creating the collection!', error);
+        });
+    }
+
+    function loadCollections() {
+        const token = localStorage.getItem('token');
+        axios.get('http://localhost:3000/user/collections', { headers: { 'authorization': token } })
+        .then(response => {
+            const collections = response.data;
+            const collectionsDiv = document.getElementById('collections');
+            if(collectionsDiv){
+                if(collections.length > 0){
+                    collectionsDiv.innerHTML = collections.map(collection => `
+                        <div class="collection-item">
+                            <h4>${collection.name}</h4>
+                            <button class="view-collection-button" data-id="${collection.id}">View Collection</button>
+                        </div>
+                    `).join('');
+                    document.querySelectorAll('.view-collection-button').forEach(button => {
+                        button.addEventListener('click', () => {
+                            const collectionId = button.getAttribute('data-id');
+                            viewCollection(collectionId);
+                        });
+                    });
+                }else{
+                    collectionsDiv.innerHTML = '';
+                }
+            }
+        })
+        .catch(error => {
+            console.error('There was an error loading the collections!', error);
+        });
+    }
+
+    function viewCollection(collectionId) {
+        const token = localStorage.getItem('token');
+        axios.get(`http://localhost:3000/user/collections/${collectionId}`, { headers: { 'authorization': token } })
+        .then(response => {
+            const data = response.data;
+            if (data.recipes && Array.isArray(data.recipes)) {
+                mainContent.innerHTML = `
+                    <h2>Collection</h2>
+                    <div id="collection-recipes">
+                        ${data.recipes.map(recipe => `
+                            <div class="recipe-item">
+                                <h3>${recipe.title}</h3>
+                                <p><strong>Ingredients:</strong> ${recipe.ingredients}</p>
+                                <p><strong>Instructions:</strong> ${recipe.instructions}</p>
+                                ${recipe.imageUrl ? `<img src="${recipe.imageUrl}" alt="${recipe.title}">` : ''}
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            } else {
+                mainContent.innerHTML = `
+                    <h2>Collection</h2>
+                    <p>No recipes found in this collection.</p>
+                `;
+            }
+        })
+        .catch(error => {
+            console.error('There was an error loading the collection recipes!', error);
+        });
+    }    
 
     const token = localStorage.getItem('token');
     if (token) {
