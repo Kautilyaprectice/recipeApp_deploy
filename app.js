@@ -16,6 +16,7 @@ const Favorite = require('./models/favorite');
 const Collection = require('./models/collection');
 const CollectionRecipe = require('./models/collectionRecipe');
 const RateAndReview = require('./models/ratingAndReview');
+const Activity = require('./models/activity');
 
 const app = express();
 
@@ -49,6 +50,9 @@ RateAndReview.belongsTo(User);
 
 Recipe.hasMany(RateAndReview);
 RateAndReview.belongsTo(Recipe);
+
+User.hasMany(Activity);
+Activity.belongsTo(User);
 
 sequelize.sync()
     .then(() => {

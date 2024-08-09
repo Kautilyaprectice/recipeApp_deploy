@@ -5,6 +5,8 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('browse-recipes-link').addEventListener('click', loadRecipes);
     document.getElementById('profile-link').addEventListener('click', loadProfile);
     document.getElementById('all-recipes').addEventListener('click', loadAllRecipes);
+    document.getElementById('all-users').addEventListener('click', loadAllUsers);
+    document.getElementById('activity-feed-link').addEventListener('click', loadActivityFeed);
 
     function loadRecipeForm() {
         mainContent.innerHTML = `
@@ -372,6 +374,90 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    function deleteRecipe(recipeId) {
+        const token = localStorage.getItem('token');
+        axios.delete(`http://localhost:3000/recipes/${recipeId}`, { headers: { 'authorization': token } })
+        .then(response => {
+            console.log('Recipe deleted successfully');
+            loadAllRecipes();
+        })
+        .catch(error => {
+            console.error('There was an error deleting the recipe!', error);
+        });
+    }
+
+    function editRecipe(recipeId) {
+        const token = localStorage.getItem('token');
+        
+        axios.get(`http://localhost:3000/recipes/${recipeId}`, { headers: { 'authorization': token } })
+        .then(response => {
+            const recipe = response.data;
+            mainContent.innerHTML = `
+                <h2>Edit Recipe</h2>
+                <form id="recipe-edit-form">
+                    <input type="text" id="title" value="${recipe.title}" placeholder="Title" required>
+                    <textarea id="ingredients" placeholder="Ingredients" required>${recipe.ingredients}</textarea>
+                    <textarea id="instructions" placeholder="Instructions" required>${recipe.instructions}</textarea>
+                    <input type="text" id="imageUrl" value="${recipe.imageUrl}" placeholder="Image URL">
+                    <label for="difficulty">Choose The Difficulty:</label>
+                    <select id="difficulty" required>
+                        <option value="easy" ${recipe.difficulty === 'easy' ? 'selected' : ''}>Easy</option>
+                        <option value="medium" ${recipe.difficulty === 'medium' ? 'selected' : ''}>Medium</option>
+                        <option value="hard" ${recipe.difficulty === 'hard' ? 'selected' : ''}>Hard</option>
+                    </select>
+                    <label for="dietary">Choose The Dietary:</label>
+                    <select id="dietary" required>
+                        <option value="vegetarian" ${recipe.dietary === 'vegetarian' ? 'selected' : ''}>Vegetarian</option>
+                        <option value="non-vegetarian" ${recipe.dietary === 'non-vegetarian' ? 'selected' : ''}>Non-Vegetarian</option>
+                    </select>
+                    <label for="preparationTime">Choose The Preparation Time:</label>
+                    <select id="preparationTime" required>
+                        <option value="short" ${recipe.preparationTime === 'short' ? 'selected' : ''}>Less than 30 minutes</option>
+                        <option value="medium" ${recipe.preparationTime === 'medium' ? 'selected' : ''}>30-60 minutes</option>
+                        <option value="long" ${recipe.preparationTime === 'long' ? 'selected' : ''}>More than 60 minutes</option>
+                    </select>
+                    <button type="submit">Update Recipe</button>
+                </form>
+            `;
+            
+            document.getElementById('recipe-edit-form').addEventListener('submit', (event) => {
+                event.preventDefault();
+                handleRecipeEditSubmit(recipeId);
+            });
+        })
+        .catch(error => {
+            console.error('There was an error fetching the recipe details!', error);
+        });
+    }
+    
+    function handleRecipeEditSubmit(recipeId) {
+        const title = document.getElementById('title').value;
+        const ingredients = document.getElementById('ingredients').value;
+        const instructions = document.getElementById('instructions').value;
+        const imageUrl = document.getElementById('imageUrl').value;
+        const difficulty = document.getElementById('difficulty').value;
+        const dietary = document.getElementById('dietary').value;
+        const preparationTime = document.getElementById('preparationTime').value;
+        const token = localStorage.getItem('token');
+    
+        axios.put(`http://localhost:3000/recipes/${recipeId}`, {
+            title,
+            ingredients,
+            instructions,
+            imageUrl,
+            difficulty,
+            dietary,
+            preparationTime
+        }, { headers: { 'authorization': token } })
+        .then(() => {
+            alert('Recipe updated successfully');
+            loadAllRecipes();
+        })
+        .catch(error => {
+            console.error('There was an error updating the recipe!', error);
+        });
+    }    
+
     function loadFavoriteRecipes() {
         const token = localStorage.getItem('token');
         axios.get('http://localhost:3000/user/favorites', { headers: { 'authorization': token } })
@@ -518,6 +604,74 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('There was an error loading the collection recipes!', error);
         });
     }    
+
+    function loadAllUsers() {
+        mainContent.innerHTML = `
+            <h2>All Users</h2>
+            <div id="user-list"></div>
+        `;
+        const token = localStorage.getItem('token');
+        axios.get('http://localhost:3000/users/allUsers', { headers: { 'authorization': token } })
+        .then(response => {
+            const users = response.data;
+            document.getElementById('user-list').innerHTML = `
+                ${users.map(user => `
+                    <div class="user-item">
+                        <h3>${user.name}</h3>
+                        <p>Email: ${user.email}</p>
+                        <button class="follow-button" data-id="${user.id}">
+                            ${user.isFollowing ? 'Following' : 'Follow'}
+                        </button>
+                    </div>
+                `).join('')}
+            `;
+    
+            document.querySelectorAll('.follow-button').forEach(button => {
+                button.addEventListener('click', () => {
+                    const userId = button.getAttribute('data-id');
+                    handleFollowButton(userId, button);
+                });
+            });
+        })
+        .catch(error => {
+            console.error('There was an error loading the users!', error);
+        });
+    }
+    
+    function handleFollowButton(userId, button) {
+        const token = localStorage.getItem('token');
+        axios.post('http://localhost:3000/user/follow', { followedId: userId }, { headers: { 'authorization': token } })
+        .then(() => {
+            button.textContent = 'Following';
+            button.disabled = true;
+        })
+        .catch(error => {
+            console.error('There was an error following the user!', error);
+        });
+    }        
+    
+    function loadActivityFeed() {
+        mainContent.innerHTML = `
+            <h2>Activity Feed</h2>
+            <div id="activity-feed"></div>
+        `;
+        const token = localStorage.getItem('token');
+        axios.get('http://localhost:3000/user/activity-feed', { headers: { 'authorization': token } })
+            .then(response => {
+                const activities = response.data;
+                document.getElementById('activity-feed').innerHTML = `
+                    ${activities.map(activity => `
+                        <div class="activity-item">
+                            <p><strong>${activity.userName}</strong> ${activity.type}:</p>
+                            ${activity.description}
+                        </div>
+                    `).join('')}
+                `;
+            })
+            .catch(error => {
+                console.error('There was an error loading the activity feed!', error);
+            });
+    }
 
     const token = localStorage.getItem('token');
     if (token) {

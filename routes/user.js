@@ -9,5 +9,8 @@ router.get('/user/profile', userAuthentication.authenticate, userController.getU
 router.put('/user/profile', userAuthentication.authenticate, userController.updateUserProfile);
 router.get('/user/profile/contributed', userAuthentication.authenticate, userController.getContributedRecipes);
 router.get('/user/profile/favorites', userAuthentication.authenticate, userController.getFavoriteRecipes);
+router.get('/users/allUsers', userAuthentication.authenticate, userController.getAllUsers);
+router.post('/user/follow', userAuthentication.authenticate, userController.followUser);
+router.get('/user/activity-feed', userAuthentication.authenticate, userController.getActivityFeed);
 
 module.exports = router;

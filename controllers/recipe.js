@@ -1,5 +1,7 @@
 const Recipe = require('../models/recipe');
+const Activity = require('../models/activity');
 const { Op } = require('sequelize');
+const Follow = require('../models/follow');
 
 exports.createRecipe = async (req, res, next) => {
     const { title, ingredients, instructions, imageUrl, difficulty, dietary, preparationTime } = req.body;
@@ -14,6 +16,17 @@ exports.createRecipe = async (req, res, next) => {
             preparationTime,
             userId: req.user.id 
         });
+
+        const followers = await Follow.findAll({ where: { followedId: req.user.id } });
+        if (followers.length > 0) {
+            await Activity.create({
+                userId: req.user.id,
+                action: 'posted',
+                details: `User ${req.user.id} posted a new recipe.`,
+                activityType: 'recipe',
+                recipeId: recipe.id  
+            });
+        }
         res.status(201).json(recipe);
     } catch (err) {
         res.status(500).json({ error: err.message });

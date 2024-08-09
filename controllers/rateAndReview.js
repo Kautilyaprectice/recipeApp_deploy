@@ -1,6 +1,8 @@
 const RateAndReview = require('../models/ratingAndReview');
 const Recipe = require('../models/recipe');
 const User = require('../models/user');
+const Activity = require('../models/activity');
+const Follow = require('../models/follow');
 
 exports.getRecipeDetails = async (req, res) => {
     try {
@@ -79,6 +81,16 @@ exports.reviewRecipe = async (req, res) => {
             await RateAndReview.create({ text, recipeId, userId });
         }
 
+        const followers = await Follow.findAll({ where: { followedId: userId } });
+        if (followers.length > 0) {
+            await Activity.create({
+                userId: req.user.id,
+                action: 'reviewed',
+                details: `User ${req.user.id} reviewed a recipe.`,
+                activityType: 'review',
+                reviewId: rateAndReview.id  
+            });
+        }
         res.status(201).json({ message: 'Review submitted successfully.' });
     } catch (error) {
         res.status(500).json({ message: 'Error submitting review', error });
