@@ -7,6 +7,7 @@ const userRoutes = require('./routes/user');
 const recipeRoutes = require('./routes/recipe');
 const favoriteRoutes = require('./routes/favorites');
 const collectionRoutes = require('./routes/collections');
+const reviewAndRatingRoutes = require('./routes/rateAndReview');
 require('dotenv').config();
 
 const User = require('./models/user');
@@ -14,6 +15,7 @@ const Recipe = require('./models/recipe');
 const Favorite = require('./models/favorite');
 const Collection = require('./models/collection');
 const CollectionRecipe = require('./models/collectionRecipe');
+const RateAndReview = require('./models/ratingAndReview');
 
 const app = express();
 
@@ -25,6 +27,7 @@ app.use('/', userRoutes);
 app.use('/', recipeRoutes);
 app.use('/', favoriteRoutes);
 app.use('/', collectionRoutes);
+app.use('/', reviewAndRatingRoutes);
 
 Recipe.belongsTo(User, { constraints: true, onDelete: 'CASCADE' });
 User.hasMany(Recipe);
@@ -40,6 +43,12 @@ Collection.belongsTo(User);
 
 Collection.belongsToMany(Recipe, { through: CollectionRecipe });
 Recipe.belongsToMany(Collection, { through: CollectionRecipe });
+
+User.hasMany(RateAndReview);
+RateAndReview.belongsTo(User);
+
+Recipe.hasMany(RateAndReview);
+RateAndReview.belongsTo(Recipe);
 
 sequelize.sync()
     .then(() => {

@@ -106,13 +106,28 @@ document.addEventListener('DOMContentLoaded', () => {
                             <p><strong>Ingredients:</strong> ${recipe.ingredients}</p>
                             <p><strong>Instructions:</strong> ${recipe.instructions}</p>
                             ${recipe.imageUrl ? `<img src="${recipe.imageUrl}" alt="${recipe.title}">` : ''}
+                            <div class="rating-and-review">
+                                <h4>Rate this Recipe:</h4>
+                                <select class="rating-select" data-id="${recipe.id}">
+                                    <option value="1">1 Star</option>
+                                    <option value="2">2 Stars</option>
+                                    <option value="3">3 Stars</option>
+                                    <option value="4">4 Stars</option>
+                                    <option value="5">5 Stars</option>
+                                </select>
+                                <button class="rate-button" data-id="${recipe.id}">Rate</button>
+                                <h4>Leave a Review:</h4>
+                                <textarea class="review-text" data-id="${recipe.id}" placeholder="Write your review here..."></textarea>
+                                <button class="review-button" data-id="${recipe.id}">Submit Review</button>
+                                <div class="reviews" id="reviews-${recipe.id}"></div>
+                            </div>
                             <button class="favorite-button" data-id="${recipe.id}">Save to Favorites</button>
                             <button class="add-to-collection-button" data-recipe-id="${recipe.id}">Add to Collection</button>
                         </div>
                     `).join('')}
                 </div>
             `;
-    
+
             document.querySelectorAll('.favorite-button').forEach(button => {
                 button.addEventListener('click', () => {
                     const recipeId = button.getAttribute('data-id');
@@ -126,11 +141,75 @@ document.addEventListener('DOMContentLoaded', () => {
                     showCollectionSelector(recipeId);
                 });
             });
+    
+            document.querySelectorAll('.rate-button').forEach(button => {
+                button.addEventListener('click', () => {
+                    const recipeId = button.getAttribute('data-id');
+                    const rating = document.querySelector(`.rating-select[data-id="${recipeId}"]`).value;
+                    rateRecipe(recipeId, rating);
+                });
+            });
+    
+            document.querySelectorAll('.review-button').forEach(button => {
+                button.addEventListener('click', () => {
+                    const recipeId = button.getAttribute('data-id');
+                    const reviewText = document.querySelector(`.review-text[data-id="${recipeId}"]`).value;
+                    reviewRecipe(recipeId, reviewText);
+                });
+            });
+    
+            loadReviewsAndRatingsForRecipes(data.map(recipe => recipe.id));
         })
         .catch(error => {
             console.error('There was an error loading the recipes!', error);
         });
     }
+    
+    function loadReviewsAndRatingsForRecipes(recipeIds) {
+        recipeIds.forEach(recipeId => {
+            axios.get(`http://localhost:3000/recipes/${recipeId}/details`)
+            .then(response => {
+                const data = response.data;
+                const reviewsDiv = document.getElementById(`reviews-${recipeId}`);
+                if (reviewsDiv) {
+                    reviewsDiv.innerHTML = `
+                        <h4>Average Rating: ${data.averageRating} Stars</h4>
+                        <h5>Reviews:</h5>
+                        ${data.reviews.map(review => `
+                            <p><strong>${review.userName}:</strong> ${review.text}</p>
+                        `).join('')}
+                    `;
+                }
+            })
+            .catch(error => {
+                console.error('There was an error loading the reviews and ratings!', error);
+            });
+        });
+    }
+    
+    function rateRecipe(recipeId, rating) {
+        const token = localStorage.getItem('token');
+        axios.post(`http://localhost:3000/recipes/${recipeId}/rate`, { rating }, { headers: { 'authorization': token } })
+        .then(() => {
+            alert('Recipe rated successfully');
+            loadAllRecipes();
+        })
+        .catch(error => {
+            console.error('There was an error rating the recipe!', error);
+        });
+    }
+    
+    function reviewRecipe(recipeId, reviewText) {
+        const token = localStorage.getItem('token');
+        axios.post(`http://localhost:3000/recipes/${recipeId}/review`, { text: reviewText }, { headers: { 'authorization': token } })
+        .then(() => {
+            alert('Review submitted successfully');
+            loadAllRecipes();
+        })
+        .catch(error => {
+            console.error('There was an error submitting the review!', error);
+        });
+    }    
 
     function showCollectionSelector(recipeId) {
         const token = localStorage.getItem('token');
@@ -175,18 +254,6 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('There was an error adding the recipe to the collection!', error);
         });
     }    
-    
-    function removeFromCollection(collectionId, recipeId) {
-        const token = localStorage.getItem('token');
-        axios.delete(`http://localhost:3000/user/collections/${collectionId}/recipes/${recipeId}`, { headers: { 'authorization': token } })
-        .then(() => {
-            alert('Recipe removed from collection');
-            viewCollection(collectionId);
-        })
-        .catch(error => {
-            console.error('There was an error removing the recipe from the collection!', error);
-        });
-    }
 
     function saveToFavorites(recipeId) {
         const token = localStorage.getItem('token');
