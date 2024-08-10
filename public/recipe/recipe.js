@@ -8,6 +8,25 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('all-users').addEventListener('click', loadAllUsers);
     document.getElementById('activity-feed-link').addEventListener('click', loadActivityFeed);
 
+    function checkIfAdmin() {
+        const token = localStorage.getItem('token');
+        axios.get('http://localhost:3000/user/isAdmin', { headers: { 'authorization': token } })
+            .then(response => {
+                if (response.data.role === 'admin') {
+                    const adminDashboard = document.getElementById('admin-dashboard');
+                    adminDashboard.style.display = 'block'; 
+                    adminDashboard.addEventListener('click', () => {
+                        window.location.href = "../admin/admin.html";
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching user profile:', error);
+            });
+    }
+
+    checkIfAdmin();
+
     function loadRecipeForm() {
         mainContent.innerHTML = `
             <h2>Create Recipe</h2>

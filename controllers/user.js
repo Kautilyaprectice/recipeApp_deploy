@@ -124,7 +124,7 @@ exports.followUser = async (req, res) => {
         await Activity.create({
             userId: followedId,
             action: 'followed',
-            details: `User ${userId} followed you.`,
+            details: `You are following User ${userId}.`,
             activityType: 'follow'
         });
 
@@ -162,3 +162,22 @@ exports.getActivityFeed = async (req, res) => {
         res.status(500).json({ message: 'Error fetching activity feed', error: error.message });
     }
 };
+
+exports.getIsAdmin = async (req, res, next) => {
+    try{
+        const userId = req.user.id;
+        const isAdmin = await User.findOne({
+            where: {
+                id: userId,
+                role: 'admin'
+            }
+        });
+        if(isAdmin){
+            return res.json({ role: 'admin' });
+        }else{
+            return res.json({ role: 'user' });
+        }
+    }catch(err){
+        res.status(500).json({ error: err.message });
+    }
+}

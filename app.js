@@ -8,6 +8,7 @@ const recipeRoutes = require('./routes/recipe');
 const favoriteRoutes = require('./routes/favorites');
 const collectionRoutes = require('./routes/collections');
 const reviewAndRatingRoutes = require('./routes/rateAndReview');
+const adminRoutes = require('./routes/admin');
 require('dotenv').config();
 
 const User = require('./models/user');
@@ -29,6 +30,7 @@ app.use('/', recipeRoutes);
 app.use('/', favoriteRoutes);
 app.use('/', collectionRoutes);
 app.use('/', reviewAndRatingRoutes);
+app.use('/', adminRoutes);
 
 Recipe.belongsTo(User, { constraints: true, onDelete: 'CASCADE' });
 User.hasMany(Recipe);

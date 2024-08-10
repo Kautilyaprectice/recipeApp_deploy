@@ -19,6 +19,18 @@ const User = sequelize.define('user', {
     password:{
         type: Sequelize.STRING,
         allowNull: false
+    },
+    role: {
+        type: Sequelize.STRING,
+        defaultValue: 'user'
+    },
+    isApproved: {
+        type: Sequelize.BOOLEAN,
+        defaultValue: false
+    },
+    isBanned: {
+        type: Sequelize.BOOLEAN,
+        defaultValue: false
     }
 });
 

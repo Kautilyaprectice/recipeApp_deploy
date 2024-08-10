@@ -12,5 +12,6 @@ router.get('/user/profile/favorites', userAuthentication.authenticate, userContr
 router.get('/users/allUsers', userAuthentication.authenticate, userController.getAllUsers);
 router.post('/user/follow', userAuthentication.authenticate, userController.followUser);
 router.get('/user/activity-feed', userAuthentication.authenticate, userController.getActivityFeed);
+router.get('/user/isAdmin', userAuthentication.authenticate, userController.getIsAdmin);
 
 module.exports = router;
