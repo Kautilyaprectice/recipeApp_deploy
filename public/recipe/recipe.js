@@ -1,13 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     const mainContent = document.getElementById('main-content');
 
-    document.getElementById('create-recipe-link').addEventListener('click', loadRecipeForm);
-    document.getElementById('browse-recipes-link').addEventListener('click', loadRecipes);
-    document.getElementById('profile-link').addEventListener('click', loadProfile);
-    document.getElementById('all-recipes').addEventListener('click', loadAllRecipes);
-    document.getElementById('all-users').addEventListener('click', loadAllUsers);
-    document.getElementById('activity-feed-link').addEventListener('click', loadActivityFeed);
-
     function checkIfAdmin() {
         const token = localStorage.getItem('token');
         axios.get('http://localhost:3000/user/isAdmin', { headers: { 'authorization': token } })
@@ -24,95 +17,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.error('Error fetching user profile:', error);
             });
     }
-
     checkIfAdmin();
 
-    function loadRecipeForm() {
-        mainContent.innerHTML = `
-            <h2>Create Recipe</h2>
-            <form id="recipe-form">
-                <input type="text" id="title" placeholder="Title" required>
-                <textarea id="ingredients" placeholder="Ingredients" required></textarea>
-                <textarea id="instructions" placeholder="Instructions" required></textarea>
-                <input type="text" id="imageUrl" placeholder="Image URL">
-                <label for="difficulty">Choose The Difficulty:</label>
-                <select id="difficulty" required>
-                    <option value="easy">Easy</option>
-                    <option value="medium">Medium</option>
-                    <option value="hard">Hard</option>
-                </select>
-                <label for="dietary">Choose The Dietary:</label>
-                <select id="dietary" required>
-                    <option value="vegetarian">Vegetarian</option>
-                    <option value="non-vegetarian">Non-Vegetarian</option>
-                </select>
-                <label for="preparationTime">Choose The Preparation Time:</label>
-                <select id="preparationTime" required>
-                    <option value="short">Less than 30 minutes</option>
-                    <option value="medium">30-60 minutes</option>
-                    <option value="long">More than 60 minutes</option>
-                </select>
-                <button type="submit">Submit</button>
-            </form>
-        `;
-        document.getElementById('recipe-form').addEventListener('submit', handleRecipeSubmit);
-    }
-
-    function loadRecipes() {
-        mainContent.innerHTML = `
-            <h2>Browse Recipes</h2>
-            <input type="text" id="search" placeholder="Search recipes...">
-            <button id="search-button">Search</button>
-            <select id="filter-dietary">
-                <option value="">All Dietary Preferences</option>
-                <option value="vegetarian">Vegetarian</option>
-                <option value="non-vegetarian">Non-Vegetarian</option>
-            </select>
-            <select id="filter-difficulty">
-                <option value="">All Difficulty Levels</option>
-                <option value="easy">Easy</option>
-                <option value="medium">Medium</option>
-                <option value="hard">Hard</option>
-            </select>
-            <select id="filter-time">
-                <option value="">All Preparation Times</option>
-                <option value="short">Less than 30 minutes</option>
-                <option value="medium">30-60 minutes</option>
-                <option value="long">More than 60 minutes</option>
-            </select>
-            <div id="recipe-list"></div>
-        `;
-        document.getElementById('search-button').addEventListener('click', loadFilteredRecipes);
-    }
-
-    function handleRecipeSubmit(event) {
-        event.preventDefault();
-        const title = document.getElementById('title').value;
-        const ingredients = document.getElementById('ingredients').value;
-        const instructions = document.getElementById('instructions').value;
-        const imageUrl = document.getElementById('imageUrl').value;
-        const difficulty = document.getElementById('difficulty').value;
-        const dietary = document.getElementById('dietary').value;
-        const preparationTime = document.getElementById('preparationTime').value;
-        const token = localStorage.getItem('token');
-
-        axios.post('http://localhost:3000/user/recipe', {
-            title,
-            ingredients,
-            instructions,
-            imageUrl,
-            difficulty,
-            dietary,
-            preparationTime
-        }, { headers: { 'authorization': token } })
-        .then(() => {
-            alert('Recipe created successfully');
-            loadAllRecipes();
-        })
-        .catch(error => {
-            console.error('There was an error creating the recipe!', error);
-        });
-    }
+    document.getElementById('all-recipes').addEventListener('click', loadAllRecipes);
 
     function loadAllRecipes() {
         axios.get('http://localhost:3000/recipes')
@@ -184,53 +91,19 @@ document.addEventListener('DOMContentLoaded', () => {
         .catch(error => {
             console.error('There was an error loading the recipes!', error);
         });
-    }
-    
-    function loadReviewsAndRatingsForRecipes(recipeIds) {
-        recipeIds.forEach(recipeId => {
-            axios.get(`http://localhost:3000/recipes/${recipeId}/details`)
-            .then(response => {
-                const data = response.data;
-                const reviewsDiv = document.getElementById(`reviews-${recipeId}`);
-                if (reviewsDiv) {
-                    reviewsDiv.innerHTML = `
-                        <h4>Average Rating: ${data.averageRating} Stars</h4>
-                        <h5>Reviews:</h5>
-                        ${data.reviews.map(review => `
-                            <p><strong>${review.userName}:</strong> ${review.text}</p>
-                        `).join('')}
-                    `;
-                }
-            })
-            .catch(error => {
-                console.error('There was an error loading the reviews and ratings!', error);
-            });
-        });
-    }
-    
-    function rateRecipe(recipeId, rating) {
+    };
+
+    function saveToFavorites(recipeId) {
         const token = localStorage.getItem('token');
-        axios.post(`http://localhost:3000/recipes/${recipeId}/rate`, { rating }, { headers: { 'authorization': token } })
+        axios.post(`http://localhost:3000/user/favorites`, { recipeId }, { headers: { 'authorization': token } })
         .then(() => {
-            alert('Recipe rated successfully');
-            loadAllRecipes();
+            alert('Recipe saved to favorites!');
+            loadFavoriteRecipes();
         })
         .catch(error => {
-            console.error('There was an error rating the recipe!', error);
+            console.error('There was an error saving to favorites!', error);
         });
-    }
-    
-    function reviewRecipe(recipeId, reviewText) {
-        const token = localStorage.getItem('token');
-        axios.post(`http://localhost:3000/recipes/${recipeId}/review`, { text: reviewText }, { headers: { 'authorization': token } })
-        .then(() => {
-            alert('Review submitted successfully');
-            loadAllRecipes();
-        })
-        .catch(error => {
-            console.error('There was an error submitting the review!', error);
-        });
-    }    
+    };
 
     function showCollectionSelector(recipeId) {
         const token = localStorage.getItem('token');
@@ -262,8 +135,8 @@ document.addEventListener('DOMContentLoaded', () => {
         .catch(error => {
             console.error('There was an error loading the collections for selection!', error);
         });
-    }
-    
+    };
+
     function addToCollection(collectionId, recipeId) {
         const token = localStorage.getItem('token');
         axios.post(`http://localhost:3000/user/collections/${collectionId}/recipes`, { recipeId }, { headers: { 'authorization': token } })
@@ -274,19 +147,144 @@ document.addEventListener('DOMContentLoaded', () => {
         .catch(error => {
             console.error('There was an error adding the recipe to the collection!', error);
         });
-    }    
+    };    
 
-    function saveToFavorites(recipeId) {
+    function rateRecipe(recipeId, rating) {
         const token = localStorage.getItem('token');
-        axios.post(`http://localhost:3000/user/favorites`, { recipeId }, { headers: { 'authorization': token } })
+        axios.post(`http://localhost:3000/recipes/${recipeId}/rate`, { rating }, { headers: { 'authorization': token } })
         .then(() => {
-            alert('Recipe saved to favorites!');
-            loadFavoriteRecipes();
+            alert('Recipe rated successfully');
+            loadAllRecipes();
         })
         .catch(error => {
-            console.error('There was an error saving to favorites!', error);
+            console.error('There was an error rating the recipe!', error);
         });
-    }
+    };
+    
+    function reviewRecipe(recipeId, reviewText) {
+        const token = localStorage.getItem('token');
+        axios.post(`http://localhost:3000/recipes/${recipeId}/review`, { text: reviewText }, { headers: { 'authorization': token } })
+        .then(() => {
+            alert('Review submitted successfully');
+            loadAllRecipes();
+        })
+        .catch(error => {
+            console.error('There was an error submitting the review!', error);
+        });
+    };
+
+    function loadReviewsAndRatingsForRecipes(recipeIds) {
+        recipeIds.forEach(recipeId => {
+            axios.get(`http://localhost:3000/recipes/${recipeId}/details`)
+            .then(response => {
+                const data = response.data;
+                const reviewsDiv = document.getElementById(`reviews-${recipeId}`);
+                if (reviewsDiv) {
+                    reviewsDiv.innerHTML = `
+                        <h4>Average Rating: ${data.averageRating} Stars</h4>
+                        <h5>Reviews:</h5>
+                        ${data.reviews.map(review => `
+                            <p><strong>${review.userName}:</strong> ${review.text}</p>
+                        `).join('')}
+                    `;
+                }
+            })
+            .catch(error => {
+                console.error('There was an error loading the reviews and ratings!', error);
+            });
+        });
+    };
+
+    document.getElementById('create-recipe-link').addEventListener('click', loadRecipeForm);
+
+    function loadRecipeForm() {
+        mainContent.innerHTML = `
+            <h2>Create Recipe</h2>
+            <form id="recipe-form">
+                <input type="text" id="title" placeholder="Title" required>
+                <textarea id="ingredients" placeholder="Ingredients" required></textarea>
+                <textarea id="instructions" placeholder="Instructions" required></textarea>
+                <input type="text" id="imageUrl" placeholder="Image URL">
+                <label for="difficulty">Choose The Difficulty:</label>
+                <select id="difficulty" required>
+                    <option value="easy">Easy</option>
+                    <option value="medium">Medium</option>
+                    <option value="hard">Hard</option>
+                </select>
+                <label for="dietary">Choose The Dietary:</label>
+                <select id="dietary" required>
+                    <option value="vegetarian">Vegetarian</option>
+                    <option value="non-vegetarian">Non-Vegetarian</option>
+                </select>
+                <label for="preparationTime">Choose The Preparation Time:</label>
+                <select id="preparationTime" required>
+                    <option value="short">Less than 30 minutes</option>
+                    <option value="medium">30-60 minutes</option>
+                    <option value="long">More than 60 minutes</option>
+                </select>
+                <button type="submit">Submit</button>
+            </form>
+        `;
+        document.getElementById('recipe-form').addEventListener('submit', handleRecipeSubmit);
+    };
+
+    function handleRecipeSubmit(event) {
+        event.preventDefault();
+        const title = document.getElementById('title').value;
+        const ingredients = document.getElementById('ingredients').value;
+        const instructions = document.getElementById('instructions').value;
+        const imageUrl = document.getElementById('imageUrl').value;
+        const difficulty = document.getElementById('difficulty').value;
+        const dietary = document.getElementById('dietary').value;
+        const preparationTime = document.getElementById('preparationTime').value;
+        const token = localStorage.getItem('token');
+
+        axios.post('http://localhost:3000/user/recipe', {
+            title,
+            ingredients,
+            instructions,
+            imageUrl,
+            difficulty,
+            dietary,
+            preparationTime
+        }, { headers: { 'authorization': token } })
+        .then(() => {
+            alert('Recipe created successfully');
+            loadAllRecipes();
+        })
+        .catch(error => {
+            console.error('There was an error creating the recipe!', error);
+        });
+    };
+
+    document.getElementById('browse-recipes-link').addEventListener('click', loadRecipes);
+
+    function loadRecipes() {
+        mainContent.innerHTML = `
+            <h2>Browse Recipes</h2>
+            <input type="text" id="search" placeholder="Search recipes...">
+            <button id="search-button">Search</button>
+            <select id="filter-dietary">
+                <option value="">All Dietary Preferences</option>
+                <option value="vegetarian">Vegetarian</option>
+                <option value="non-vegetarian">Non-Vegetarian</option>
+            </select>
+            <select id="filter-difficulty">
+                <option value="">All Difficulty Levels</option>
+                <option value="easy">Easy</option>
+                <option value="medium">Medium</option>
+                <option value="hard">Hard</option>
+            </select>
+            <select id="filter-time">
+                <option value="">All Preparation Times</option>
+                <option value="short">Less than 30 minutes</option>
+                <option value="medium">30-60 minutes</option>
+                <option value="long">More than 60 minutes</option>
+            </select>
+            <div id="recipe-list"></div>
+        `;
+        document.getElementById('search-button').addEventListener('click', loadFilteredRecipes);
+    };
 
     function loadFilteredRecipes() {
         const search = document.getElementById('search').value;
@@ -317,7 +315,9 @@ document.addEventListener('DOMContentLoaded', () => {
         .catch(error => {
             console.error('There was an error loading the recipes!', error);
         });
-    }
+    };
+
+    document.getElementById('profile-link').addEventListener('click', loadProfile);
 
     function loadProfile() {
         mainContent.innerHTML = `
@@ -341,7 +341,7 @@ document.addEventListener('DOMContentLoaded', () => {
         loadUserProfile();
         document.getElementById('profile-form').addEventListener('submit', handleProfileUpdate);
         document.getElementById('create-collection').addEventListener('click', createCollection);
-    }
+    };
 
     function loadUserProfile() {
         const token = localStorage.getItem('token');
@@ -357,7 +357,7 @@ document.addEventListener('DOMContentLoaded', () => {
         .catch(error => {
             console.error('There was an error loading the profile!', error);
         });
-    }
+    };
 
     function loadContributedRecipes() {
         const token = localStorage.getItem('token');
@@ -391,7 +391,7 @@ document.addEventListener('DOMContentLoaded', () => {
         .catch(error => {
             console.error('There was an error loading the contributed recipes!', error);
         });
-    }
+    };
 
     function deleteRecipe(recipeId) {
         const token = localStorage.getItem('token');
@@ -403,7 +403,7 @@ document.addEventListener('DOMContentLoaded', () => {
         .catch(error => {
             console.error('There was an error deleting the recipe!', error);
         });
-    }
+    };
 
     function editRecipe(recipeId) {
         const token = localStorage.getItem('token');
@@ -447,7 +447,7 @@ document.addEventListener('DOMContentLoaded', () => {
         .catch(error => {
             console.error('There was an error fetching the recipe details!', error);
         });
-    }
+    };
     
     function handleRecipeEditSubmit(recipeId) {
         const title = document.getElementById('title').value;
@@ -475,7 +475,7 @@ document.addEventListener('DOMContentLoaded', () => {
         .catch(error => {
             console.error('There was an error updating the recipe!', error);
         });
-    }    
+    };    
 
     function loadFavoriteRecipes() {
         const token = localStorage.getItem('token');
@@ -513,7 +513,7 @@ document.addEventListener('DOMContentLoaded', () => {
         .catch(error => {
             console.error('There was an error loading the favorite recipes!', error);
         });
-    }               
+    };               
 
     function removeFromFavorites(recipeId) {
         const token = localStorage.getItem('token');
@@ -525,7 +525,7 @@ document.addEventListener('DOMContentLoaded', () => {
         .catch(error => {
             console.error('There was an error removing the recipe from favorites!', error);
         });
-    }
+    };
 
     function handleProfileUpdate(event) {
         event.preventDefault();
@@ -546,7 +546,7 @@ document.addEventListener('DOMContentLoaded', () => {
         .catch(error => {
             console.error('There was an error updating the profile!', error);
         });
-    }
+    };
 
     function createCollection() {
         const collectionName = prompt('Enter the name of the new collection:');
@@ -561,7 +561,7 @@ document.addEventListener('DOMContentLoaded', () => {
         .catch(error => {
             console.error('There was an error creating the collection!', error);
         });
-    }
+    };
 
     function loadCollections() {
         const token = localStorage.getItem('token');
@@ -591,7 +591,7 @@ document.addEventListener('DOMContentLoaded', () => {
         .catch(error => {
             console.error('There was an error loading the collections!', error);
         });
-    }
+    };
 
     function viewCollection(collectionId) {
         const token = localStorage.getItem('token');
@@ -622,7 +622,9 @@ document.addEventListener('DOMContentLoaded', () => {
         .catch(error => {
             console.error('There was an error loading the collection recipes!', error);
         });
-    }    
+    }; 
+
+    document.getElementById('all-users').addEventListener('click', loadAllUsers);
 
     function loadAllUsers() {
         mainContent.innerHTML = `
@@ -655,7 +657,7 @@ document.addEventListener('DOMContentLoaded', () => {
         .catch(error => {
             console.error('There was an error loading the users!', error);
         });
-    }
+    };
     
     function handleFollowButton(userId, button) {
         const token = localStorage.getItem('token');
@@ -667,8 +669,10 @@ document.addEventListener('DOMContentLoaded', () => {
         .catch(error => {
             console.error('There was an error following the user!', error);
         });
-    }        
-    
+    };
+
+    document.getElementById('activity-feed-link').addEventListener('click', loadActivityFeed);
+
     function loadActivityFeed() {
         mainContent.innerHTML = `
             <h2>Activity Feed</h2>
@@ -690,7 +694,7 @@ document.addEventListener('DOMContentLoaded', () => {
             .catch(error => {
                 console.error('There was an error loading the activity feed!', error);
             });
-    }
+    };
 
     const token = localStorage.getItem('token');
     if (token) {
