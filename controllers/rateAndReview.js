@@ -4,7 +4,7 @@ const User = require('../models/user');
 const Activity = require('../models/activity');
 const Follow = require('../models/follow');
 
-exports.getRecipeDetails = async (req, res) => {
+exports.getRecipeDetails = async (req, res, next) => {
     try {
         const { recipeId } = req.params;
 
@@ -28,7 +28,7 @@ exports.getRecipeDetails = async (req, res) => {
     }
 };
 
-exports.rateRecipe = async (req, res) => {
+exports.rateRecipe = async (req, res, next) => {
     try {
         const { recipeId } = req.params;
         const { rating } = req.body;
@@ -58,7 +58,7 @@ exports.rateRecipe = async (req, res) => {
     }
 };
 
-exports.reviewRecipe = async (req, res) => {
+exports.reviewRecipe = async (req, res, next) => {
     try {
         const { recipeId } = req.params;
         const { text } = req.body;

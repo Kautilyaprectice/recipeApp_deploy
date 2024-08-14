@@ -2,7 +2,7 @@ const Collection = require('../models/collection');
 const Recipe = require('../models/recipe');
 const CollectionRecipe = require('../models/collectionRecipe');
 
-exports.createCollection = async (req, res) => {
+exports.createCollection = async (req, res, next) => {
     const { name } = req.body;
     try {
         const collection = await Collection.create({
@@ -15,7 +15,7 @@ exports.createCollection = async (req, res) => {
     }
 };
 
-exports.getCollections = async (req, res) => {
+exports.getCollections = async (req, res, next) => {
     try {
         const collections = await Collection.findAll({
             where: {
@@ -28,7 +28,7 @@ exports.getCollections = async (req, res) => {
     }
 };
 
-exports.addRecipeToCollection = async (req, res) => {
+exports.addRecipeToCollection = async (req, res, next) => {
     const { collectionId, recipeId } = req.body;
     try {
         if (!collectionId || !recipeId) {
@@ -55,7 +55,7 @@ exports.addRecipeToCollection = async (req, res) => {
 };
 
 
-exports.getRecipesInCollection = async (req, res) => {
+exports.getRecipesInCollection = async (req, res, next) => {
     try {
         const { collectionId } = req.params;
         const userId = req.user.id;

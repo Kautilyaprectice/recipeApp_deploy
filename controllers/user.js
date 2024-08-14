@@ -78,11 +78,7 @@ exports.getContributedRecipes = async (req, res, next) => {
     }
 };
 
-exports.getFavoriteRecipes = async (req, res, next) => {
-    
-};
-
-exports.getAllUsers = async (req, res) => {
+exports.getAllUsers = async (req, res, next) => {
     try {
         if (!req.user || !req.user.id) {
             throw new Error('User not authenticated');
@@ -105,7 +101,7 @@ exports.getAllUsers = async (req, res) => {
     }
 };
 
-exports.followUser = async (req, res) => {
+exports.followUser = async (req, res, next) => {
     const { followedId } = req.body;
     const userId = req.user.id;
 
@@ -135,7 +131,7 @@ exports.followUser = async (req, res) => {
     }
 };
 
-exports.getActivityFeed = async (req, res) => {
+exports.getActivityFeed = async (req, res, next) => {
     const userId = req.user.id;
 
     try {

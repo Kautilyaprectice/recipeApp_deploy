@@ -1,6 +1,8 @@
 const express = require('express');
 const bodyParser = require('body-parser')
 const cors = require('cors');
+const helmet = require('helmet');
+const morgan = require('morgan');
 
 const sequelize = require('./util/database');
 const userRoutes = require('./routes/user');
@@ -21,9 +23,13 @@ const Activity = require('./models/activity');
 
 const app = express();
 
+app.use(helmet({ contentSecurityPolicy: false }));
+
 app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+
+app.use(morgan('combined'));
 
 app.use('/', userRoutes);
 app.use('/', recipeRoutes);

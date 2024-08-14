@@ -1,7 +1,7 @@
 const Favorite = require('../models/favorite');
 const Recipe = require('../models/recipe');
 
-exports.addFavorite = async (req, res) => {
+exports.addFavorite = async (req, res, next) => {
     const { recipeId } = req.body;
     try {
         const favorite = await Favorite.create({
@@ -14,7 +14,7 @@ exports.addFavorite = async (req, res) => {
     }
 };
 
-exports.removeFavorite = async (req, res) => {
+exports.removeFavorite = async (req, res, next) => {
     const { recipeId } = req.params;
     try {
         const favorite = await Favorite.findOne({
@@ -34,7 +34,7 @@ exports.removeFavorite = async (req, res) => {
     }
 };
 
-exports.getFavorites = async (req, res) => {
+exports.getFavorites = async (req, res, next) => {
     try {
         const favorites = await Favorite.findAll({
             where: { userId: req.user.id },
