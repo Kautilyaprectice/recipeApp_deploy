@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
     })
 
     function loadUserManagement() {
-        axios.get('http://localhost:3000/admin/users')
+        axios.get('https://recipe-management-jet.vercel.app/admin/users')
             .then(response => {
                 const users = response.data;
                 mainContent.innerHTML = `
@@ -44,7 +44,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function banUser(userId) {
-        axios.post(`http://localhost:3000/admin/users/${userId}/ban`)
+        axios.post(`https://recipe-management-jet.vercel.app/admin/users/${userId}/ban`)
             .then(() => {
                 alert('User banned successfully');
                 loadUserManagement();
@@ -55,7 +55,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function approveUser(userId) {
-        axios.post(`http://localhost:3000/admin/users/${userId}/approve`)
+        axios.post(`https://recipe-management-jet.vercel.app/admin/users/${userId}/approve`)
             .then(() => {
                 alert('User approved successfully');
                 loadUserManagement();
@@ -66,7 +66,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function loadRecipeManagement() {
-        axios.get('http://localhost:3000/admin/recipes')
+        axios.get('https://recipe-management-jet.vercel.app/admin/recipes')
             .then(response => {
                 const recipes = response.data;
                 mainContent.innerHTML = `
@@ -94,7 +94,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function deleteRecipe(recipeId) {
-        axios.delete(`http://localhost:3000/admin/recipes/${recipeId}`)
+        axios.delete(`https://recipe-management-jet.vercel.app/admin/recipes/${recipeId}`)
             .then(() => {
                 alert('Recipe deleted successfully');
                 loadRecipeManagement();
