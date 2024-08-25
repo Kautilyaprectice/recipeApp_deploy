@@ -11,7 +11,7 @@ document.getElementById('loginForm').addEventListener('submit', function(event){
 
     if(email && password){
 
-        axios.post('https://recipe-management-n4a8e0net-kautilya-tiwaris-projects.vercel.app', loginDetails)
+        axios.post('https://recipe-management-jet.vercel.app/', loginDetails)
             .then((res) => {
                 if(res.status === 200){
                     alert("Login Successful");
