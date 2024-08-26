@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function checkIfAdmin() {
         const token = localStorage.getItem('token');
-        axios.get('https://recipe-management-jet.vercel.app/user/isAdmin', { headers: { 'authorization': token } })
+        axios.get('https://recipe-management-cdmeg0wf8-kautilya-tiwaris-projects.vercel.app/user/isAdmin', { headers: { 'authorization': token } })
             .then(response => {
                 if (response.data.role === 'admin') {
                     const adminDashboard = document.getElementById('admin-dashboard');
@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('all-recipes').addEventListener('click', loadAllRecipes);
 
     function loadAllRecipes() {
-        axios.get('https://recipe-management-jet.vercel.app/recipes')
+        axios.get('https://recipe-management-cdmeg0wf8-kautilya-tiwaris-projects.vercel.app/recipes')
         .then(response => {
             const data = response.data;
             mainContent.innerHTML = `
@@ -95,7 +95,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function saveToFavorites(recipeId) {
         const token = localStorage.getItem('token');
-        axios.post(`https://recipe-management-jet.vercel.app/user/favorites`, { recipeId }, { headers: { 'authorization': token } })
+        axios.post(`https://recipe-management-cdmeg0wf8-kautilya-tiwaris-projects.vercel.app/user/favorites`, { recipeId }, { headers: { 'authorization': token } })
         .then(() => {
             alert('Recipe saved to favorites!');
             loadFavoriteRecipes();
@@ -107,7 +107,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function showCollectionSelector(recipeId) {
         const token = localStorage.getItem('token');
-        axios.get('https://recipe-management-jet.vercel.app/user/collections', { headers: { 'authorization': token } })
+        axios.get('https://recipe-management-cdmeg0wf8-kautilya-tiwaris-projects.vercel.app/user/collections', { headers: { 'authorization': token } })
         .then(response => {
             const collections = response.data;
     
@@ -139,7 +139,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function addToCollection(collectionId, recipeId) {
         const token = localStorage.getItem('token');
-        axios.post(`https://recipe-management-jet.vercel.app/user/collections/${collectionId}/recipes`, { recipeId }, { headers: { 'authorization': token } })
+        axios.post(`https://recipe-management-cdmeg0wf8-kautilya-tiwaris-projects.vercel.app/user/collections/${collectionId}/recipes`, { recipeId }, { headers: { 'authorization': token } })
         .then(() => {
             alert('Recipe added to collection successfully');
             loadAllRecipes();
@@ -151,7 +151,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function rateRecipe(recipeId, rating) {
         const token = localStorage.getItem('token');
-        axios.post(`https://recipe-management-jet.vercel.app/recipes/${recipeId}/rate`, { rating }, { headers: { 'authorization': token } })
+        axios.post(`https://recipe-management-cdmeg0wf8-kautilya-tiwaris-projects.vercel.app/recipes/${recipeId}/rate`, { rating }, { headers: { 'authorization': token } })
         .then(() => {
             alert('Recipe rated successfully');
             loadAllRecipes();
@@ -163,7 +163,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     function reviewRecipe(recipeId, reviewText) {
         const token = localStorage.getItem('token');
-        axios.post(`https://recipe-management-jet.vercel.app/recipes/${recipeId}/review`, { text: reviewText }, { headers: { 'authorization': token } })
+        axios.post(`https://recipe-management-cdmeg0wf8-kautilya-tiwaris-projects.vercel.app/recipes/${recipeId}/review`, { text: reviewText }, { headers: { 'authorization': token } })
         .then(() => {
             alert('Review submitted successfully');
             loadAllRecipes();
@@ -175,7 +175,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function loadReviewsAndRatingsForRecipes(recipeIds) {
         recipeIds.forEach(recipeId => {
-            axios.get(`https://recipe-management-jet.vercel.app/recipes/${recipeId}/details`)
+            axios.get(`https://recipe-management-cdmeg0wf8-kautilya-tiwaris-projects.vercel.app/recipes/${recipeId}/details`)
             .then(response => {
                 const data = response.data;
                 const reviewsDiv = document.getElementById(`reviews-${recipeId}`);
@@ -239,7 +239,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const preparationTime = document.getElementById('preparationTime').value;
         const token = localStorage.getItem('token');
 
-        axios.post('https://recipe-management-jet.vercel.app/user/recipe', {
+        axios.post('https://recipe-management-cdmeg0wf8-kautilya-tiwaris-projects.vercel.app/user/recipe', {
             title,
             ingredients,
             instructions,
@@ -292,7 +292,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const difficulty = document.getElementById('filter-difficulty').value;
         const time = document.getElementById('filter-time').value;
 
-        axios.get('https://recipe-management-jet.vercel.app/filtered/recipes', {
+        axios.get('https://recipe-management-cdmeg0wf8-kautilya-tiwaris-projects.vercel.app/filtered/recipes', {
             params: {
                 search,
                 dietary,
@@ -345,7 +345,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function loadUserProfile() {
         const token = localStorage.getItem('token');
-        axios.get('https://recipe-management-jet.vercel.app/user/profile', { headers: { 'authorization': token } })
+        axios.get('https://recipe-management-cdmeg0wf8-kautilya-tiwaris-projects.vercel.app/user/profile', { headers: { 'authorization': token } })
         .then(response => {
             const profile = response.data;
             document.getElementById('name').value = profile.name;
@@ -361,7 +361,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function loadContributedRecipes() {
         const token = localStorage.getItem('token');
-        axios.get('https://recipe-management-jet.vercel.app/user/profile/contributed', { headers: { 'authorization': token } })
+        axios.get('https://recipe-management-cdmeg0wf8-kautilya-tiwaris-projects.vercel.app/user/profile/contributed', { headers: { 'authorization': token } })
         .then(response => {
             const data = response.data;
             const contributedRecipes = document.getElementById('contributed-recipes');
@@ -395,7 +395,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function deleteRecipe(recipeId) {
         const token = localStorage.getItem('token');
-        axios.delete(`https://recipe-management-jet.vercel.app/recipes/${recipeId}`, { headers: { 'authorization': token } })
+        axios.delete(`https://recipe-management-cdmeg0wf8-kautilya-tiwaris-projects.vercel.app/recipes/${recipeId}`, { headers: { 'authorization': token } })
         .then(response => {
             console.log('Recipe deleted successfully');
             loadAllRecipes();
@@ -408,7 +408,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function editRecipe(recipeId) {
         const token = localStorage.getItem('token');
         
-        axios.get(`https://recipe-management-jet.vercel.app/recipes/${recipeId}`, { headers: { 'authorization': token } })
+        axios.get(`https://recipe-management-cdmeg0wf8-kautilya-tiwaris-projects.vercel.app/recipes/${recipeId}`, { headers: { 'authorization': token } })
         .then(response => {
             const recipe = response.data;
             mainContent.innerHTML = `
@@ -459,7 +459,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const preparationTime = document.getElementById('preparationTime').value;
         const token = localStorage.getItem('token');
     
-        axios.put(`https://recipe-management-jet.vercel.app/recipes/${recipeId}`, {
+        axios.put(`https://recipe-management-cdmeg0wf8-kautilya-tiwaris-projects.vercel.app/recipes/${recipeId}`, {
             title,
             ingredients,
             instructions,
@@ -479,7 +479,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function loadFavoriteRecipes() {
         const token = localStorage.getItem('token');
-        axios.get('https://recipe-management-jet.vercel.app/user/favorites', { headers: { 'authorization': token } })
+        axios.get('https://recipe-management-cdmeg0wf8-kautilya-tiwaris-projects.vercel.app/user/favorites', { headers: { 'authorization': token } })
         .then(response => {
             const data = response.data;
             const favoriteRecipes = document.getElementById('favorite-recipes');
@@ -517,7 +517,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function removeFromFavorites(recipeId) {
         const token = localStorage.getItem('token');
-        axios.delete(`https://recipe-management-jet.vercel.app/user/favorites/${recipeId}`, { headers: { 'authorization': token } })
+        axios.delete(`https://recipe-management-cdmeg0wf8-kautilya-tiwaris-projects.vercel.app/user/favorites/${recipeId}`, { headers: { 'authorization': token } })
         .then(() => {
             alert('Recipe removed from favorites');
             loadFavoriteRecipes();
@@ -534,7 +534,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const password = document.getElementById('password').value;
         const token = localStorage.getItem('token');
 
-        axios.put('https://recipe-management-jet.vercel.app/user/profile', {
+        axios.put('https://recipe-management-cdmeg0wf8-kautilya-tiwaris-projects.vercel.app/user/profile', {
             name,
             email,
             password
@@ -553,7 +553,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!collectionName) return;
 
         const token = localStorage.getItem('token');
-        axios.post('https://recipe-management-jet.vercel.app/user/collections', { name: collectionName }, { headers: { 'authorization': token } })
+        axios.post('https://recipe-management-cdmeg0wf8-kautilya-tiwaris-projects.vercel.app/user/collections', { name: collectionName }, { headers: { 'authorization': token } })
         .then(() => {
             alert('Collection created successfully');
             loadCollections();
@@ -565,7 +565,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function loadCollections() {
         const token = localStorage.getItem('token');
-        axios.get('https://recipe-management-jet.vercel.app/user/collections', { headers: { 'authorization': token } })
+        axios.get('https://recipe-management-cdmeg0wf8-kautilya-tiwaris-projects.vercel.app/user/collections', { headers: { 'authorization': token } })
         .then(response => {
             const collections = response.data;
             const collectionsDiv = document.getElementById('collections');
@@ -595,7 +595,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function viewCollection(collectionId) {
         const token = localStorage.getItem('token');
-        axios.get(`https://recipe-management-jet.vercel.app/user/collections/${collectionId}`, { headers: { 'authorization': token } })
+        axios.get(`https://recipe-management-cdmeg0wf8-kautilya-tiwaris-projects.vercel.app/user/collections/${collectionId}`, { headers: { 'authorization': token } })
         .then(response => {
             const data = response.data;
             if (data.recipes && Array.isArray(data.recipes)) {
@@ -632,7 +632,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <div id="user-list"></div>
         `;
         const token = localStorage.getItem('token');
-        axios.get('https://recipe-management-jet.vercel.app/users/allUsers', { headers: { 'authorization': token } })
+        axios.get('https://recipe-management-cdmeg0wf8-kautilya-tiwaris-projects.vercel.app/users/allUsers', { headers: { 'authorization': token } })
         .then(response => {
             const users = response.data;
             document.getElementById('user-list').innerHTML = `
@@ -661,7 +661,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     function handleFollowButton(userId, button) {
         const token = localStorage.getItem('token');
-        axios.post('https://recipe-management-jet.vercel.app/user/follow', { followedId: userId }, { headers: { 'authorization': token } })
+        axios.post('https://recipe-management-cdmeg0wf8-kautilya-tiwaris-projects.vercel.app/user/follow', { followedId: userId }, { headers: { 'authorization': token } })
         .then(() => {
             button.textContent = 'Following';
             button.disabled = true;
@@ -679,7 +679,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <div id="activity-feed"></div>
         `;
         const token = localStorage.getItem('token');
-        axios.get('https://recipe-management-jet.vercel.app/user/activity-feed', { headers: { 'authorization': token } })
+        axios.get('https://recipe-management-cdmeg0wf8-kautilya-tiwaris-projects.vercel.app/user/activity-feed', { headers: { 'authorization': token } })
             .then(response => {
                 const activities = response.data;
                 document.getElementById('activity-feed').innerHTML = `

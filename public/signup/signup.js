@@ -18,7 +18,7 @@ document.getElementById('signupForm').addEventListener('submit', function(event)
     };
 
     if (name && email && password) {
-        axios.post("https://recipe-management-jet.vercel.app/user/signup", registerUser)
+        axios.post("https://recipe-management-cdmeg0wf8-kautilya-tiwaris-projects.vercel.app/user/signup", registerUser)
             .then((res) => {
                 if (res.status === 201) {
                     window.location.href = "../login/login.html";
